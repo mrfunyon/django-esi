@@ -6,7 +6,7 @@ When to use
 -------------
 
 Use this tag when you need to render a single object and would like to take
-advantage of varnish's caching to speed up the rendering of the page.
+advantage of `Varnish`_'s caching to speed up the rendering of the page.
 
 
 Hows and Whys
@@ -17,7 +17,7 @@ strategies and can be sent to a smart caching layer for rendering.
 
 For example, your site have duplicate content you are using frequently through
 your site and you would like to make these items easier to render in templates,
-leveraging varnish to cache these pieces of your site, possibly even at different
+leveraging `Varnish`_ to cache these pieces of your site, possibly even at different
 cache intervals.
 
 Here is an example before::
