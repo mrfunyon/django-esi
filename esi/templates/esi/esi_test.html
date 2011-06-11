@@ -1,0 +1,14 @@
+{% load esi %}
+{% comment %}
+use this template with an object
+
+{% create_esi for object template 'news/story_detail.html' timeout 900 %}
+
+{% create_esi for object path 'includes/lists/' timeout 1200 %}
+
+{% endcomment %}
+
+{% esi for object template 'includes/lists/news.story.html' timeout 900 %}
+
+{% esi for object path 'includes/lists/' timeout 1200 %}
+
