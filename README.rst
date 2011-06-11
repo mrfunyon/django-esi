@@ -83,8 +83,11 @@ add the url to your urls file::
     (r'^esi/', include('sosd.esi.urls')),
 
 
-.. _edge side include (ESI): http://en.wikipedia.org/wiki/Edge_Side_Includes
-.. _Wikipedia article: http://en.wikipedia.org/wiki/Edge_Side_Includes
+    .. _edge side include (ESI): http://en.wikipedia.org/wiki/Edge_Side_Includes
+    .. _Wikipedia article: http://en.wikipedia.org/wiki/Edge_Side_Includes 
+    .. _pip: http://pip.openplans.org
+    .. _Varnish: http://www.varnish-cache.org/
+    .. _Issue Tracker: https://github.com/mrfunyon/django-esi/issues
 
-.. rubric:: Footnotes
-.. [#] http://docs.djangoproject.com/en/1.2/ref/settings/#debug
+    .. rubric:: Footnotes
+    .. [#] http://docs.djangoproject.com/en/1.2/ref/settings/#debug
