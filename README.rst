@@ -46,10 +46,45 @@ To change this to use esi's you would do something like this::
         </body>
     </html>
 
+This will produce something like this::
+
+    <html>
+        <body>
+            <esi:include src="/esi/list/tags/tag/4/900/includes/lists/" /> 
+            <esi:include src="/esi/list/tags/tag/5/900/includes/lists/" /> 
+            <esi:include src="/esi/list/tags/tag/6/900/includes/lists/" /> 
+            <esi:include src="/esi/blog/entries/4/1200/blog/entry_detail.html/" /> 
+        </body>
+    </html>
+
+
 
 Loading without ESI
 """""""""""""""""""
 
-The template tag reads the ``DEBUG`` settings value  and if set to ``True``
+The template tag reads the ``DEBUG`` settings value [#]_ and if set to ``True``
 renders the view with the current request rather than including the
 ``<esi:include>`` tag.
+
+
+Installation
+------------
+Recommending installation is through `pip`_::
+
+    prompt> pip install -e git://github.com/mrfunyon/django-esi.git#egg=django-esi
+
+Once installed, you must add the app to your ``INSTALLED_APPS`` inside your
+settings::
+
+    'esi',
+
+add the url to your urls file::
+
+    (r'^esi/', include('sosd.esi.urls')),
+
+
+.. _edge side include (ESI): http://en.wikipedia.org/wiki/Edge_Side_Includes
+.. _Wikipedia article: http://en.wikipedia.org/wiki/Edge_Side_Includes
+
+.. rubric:: Footnotes
+.. [#] http://docs.djangoproject.com/en/1.2/ref/settings/#debug
