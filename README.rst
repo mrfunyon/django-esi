@@ -13,6 +13,7 @@ your site and you would like to make these items easier to render in templates,
 leverageing varnish to cache these pieces of your site.
 
 Here is an example before::
+
     <html>
       <body>
       {% for tag in tag_list %}
@@ -25,7 +26,7 @@ Here is an example before::
       </body>
     </html>
 
-To change this to use esi's you would do something like this:
+To change this to use esi's you would do something like this::
 
     <html>
       <body>
