@@ -5,9 +5,6 @@ from django.core.xheaders import populate_xheaders
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext, loader
-from ellington.core.constants import LIVE_STATUS
-from django.contrib.auth.decorators import permission_required
-from django.utils.safestring import mark_safe
 from django.db.models import Model, get_model
 from django.utils.cache import patch_cache_control
 
