@@ -39,12 +39,11 @@ class EsiNode(template.Node):
             return '<esi:include src="%s" />' % reverse(self.url_name, kwargs=kwargs)
         else:
             # call the ESI view
-            return esi_views.esi(context['request'], **kwargs)
+            return esi_views.esi(context['request'], **kwargs).content
 
 def do_create_esi(parser, token):
     """
-    Retrieves the content for a specified category for a given date, given either by a template variable or
-    the slug-path of a category.
+    Creates an esi out of an object.
     
     Syntax::
     
@@ -78,7 +77,6 @@ def do_create_esi(parser, token):
         if arg == 'timeout':
             kwargs.update({'timeout':args[args.index(arg)+1]})
         
-    print kwargs
     return EsiNode(**kwargs)
 
 register.tag('esi', do_create_esi)

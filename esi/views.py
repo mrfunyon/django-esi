@@ -31,14 +31,37 @@ def test_esi(request, app_label=None, model_name=None, object_id=None):
 
 def esi(request, app_label=None, model_name=None, object_id=None, timeout=900, template_name=None, template_dir=None):
     """
-    A detail view of a Business ( GuideItem ).
-
-    Templates:
-        :template:`guide/guideitem_detail.html`
+    Using the app_label, module_name and object_id parameters create an object and render it using `template_name` or `template_dir`.
+    
+    Parameters:
+        :app_label: `Name of a app (i.e. auth)`
+        :model_name: `Name of a model (i.e. user)`
+        :object_id: `This's objects primary key id`
+        :timeout: `Time in secondsfor this objects max_age.`
+        :template_name: `full template path to the template to use to render the object`
+        :template_dir: `Directory in which to render this object`
+        
+        `template_name` and `template_dir` are exclusive.
+        
     Context:
-        category
-            A :model:`guides.GuideItem` obj.
+        `object`
+            The object that was returned
+        `model_name`
+            If you are using a User object `user` will be in the context.
+    
+    Templates:
+        if `template_name` is used that template is used to render the object.
+        
+        if `template_dir` is used a file called `app_label`.`model_name`.html
+        ,along with any other models' content types that the object extends,
+        will be looked for in `template_dir` falling back to `template_dir`/default.html 
+        if none can be found.
+        
     """
+    if template_name is None and template_dir is None:
+        return Http404()
+    if template_name is not None and template_dir is not None:
+        return Http404()
     obj, model = get_object(app_label, model_name, object_id)
     template_list = []
     if template_name:
@@ -61,7 +84,8 @@ def esi(request, app_label=None, model_name=None, object_id=None, timeout=900, t
             for ctype_str in ctype_strs:
                 template_list.append('%s/%s.html' % (tdir, ctype_str))
             template_list.append('%s/default.html' % tdir)
-        
+    if len(template_list) ==0:
+        return Http404()
     t = loader.select_template(template_list)
     context = {
         'object': obj,
