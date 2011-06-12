@@ -80,7 +80,7 @@ settings::
 
 add the url to your urls file::
 
-    (r'^esi/', include('sosd.esi.urls')),
+    (r'^esi/', include('esi.urls')),
 
 
 .. _edge side include (ESI): http://en.wikipedia.org/wiki/Edge_Side_Includes
