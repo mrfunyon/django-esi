@@ -34,11 +34,11 @@ def esi(request, app_label=None, model_name=None, object_id=None, timeout=900, t
         :app_label: `Name of a app (i.e. auth)`
         :model_name: `Name of a model (i.e. user)`
         :object_id: `This's objects primary key id`
-        :timeout: `Time in secondsfor this objects max_age.`
+        :timeout: `Time in secondsfor this objects max_age. [default 900]`
         :template_name: `full template path to the template to use to render the object`
         :template_dir: `Directory in which to render this object`
         
-        `template_name` and `template_dir` are exclusive.
+        `template_name` and `template_dir` are exclusive, if included.
         
     Context:
         `object`
@@ -54,17 +54,22 @@ def esi(request, app_label=None, model_name=None, object_id=None, timeout=900, t
         will be looked for in `template_dir` falling back to `template_dir`/default.html 
         if none can be found.
         
+        If no template is provided `settings`.ESI_DEFAULT_TEMPLATE and `settings`.ESI_DEFAULT_DIRECTORY
+        will be checked with the same logic as `template_name` and `template_dir`
+        
     """
     if template_name is None and template_dir is None:
-        return Http404()
+        if settings.ESI_DEFAULT_TEMPLATE:
+            template_name = settings.ESI_DEFAULT_TEMPLATE
+        if settings.ESI_DEFAULT_DIRECTORY:
+            template_dir = settings.ESI_DEFAULT_DIRECTORY
     if template_name is not None and template_dir is not None:
         return Http404()
     obj, model = get_object(app_label, model_name, object_id)
     template_list = []
     if template_name:
-        template_list = [template_name,
-            "includes/lists/%s.%s.html" % (obj._meta.app_label, obj._meta.module_name)
-            ]
+        template_list.append(template_name)
+        template_list.append("includes/lists/%s.%s.html" % (obj._meta.app_label, obj._meta.module_name))
     if template_dir:
         # Consider all parent classes excluding Model.
         content_types = type(obj).mro()
