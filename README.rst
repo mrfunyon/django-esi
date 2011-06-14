@@ -69,6 +69,9 @@ renders the view with the current request rather than including the
 
 Installation
 ------------
+
+This software is still in beta. It may or may not perform as expected in production!
+
 Recommending installation is through `pip`_::
 
     prompt> pip install -e git://github.com/mrfunyon/django-esi.git#egg=django-esi
