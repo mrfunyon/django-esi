@@ -53,7 +53,7 @@ def do_create_esi(parser, token):
     
         {% create_esi for object template 'news/story_detail.html' timeout 900 %}
         
-        {% create_esi for object path 'includes/lists/' timeout 1200 %}
+        {% create_esi for object path 'includes/lists' timeout 1200 %}
         
     [object]  and [[template template_name] or [path template_path]] are required, timeout is optional.
     """
@@ -66,6 +66,8 @@ def do_create_esi(parser, token):
         raise template.TemplateSyntaxError("%r tag requires a single argument" % token.contents.split()[0])
     if args[1] != 'for':
         raise template.TemplateSyntaxError("%r tag must start with 'for'" % tag_name)
+    if args[3] not in ['tempalte', 'path']:
+        raise template.TemplateSyntaxError("3rd argument of %r tag must start be 'template' or 'path'" % tag_name)
     kwargs = {
         'object': args[2],
     }

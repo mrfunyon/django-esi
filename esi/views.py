@@ -58,11 +58,11 @@ def esi(request, app_label=None, model_name=None, object_id=None, timeout=900, t
         will be checked with the same logic as `template_name` and `template_dir`
         
     """
+    default_template = getattr(settings, 'ESI_DEFAULT_TEMPLATE', None)
+    default_template_dir = getattr(settings, 'ESI_DEFAULT_DIRECTORY', None)
     if template_name is None and template_dir is None:
-        if settings.ESI_DEFAULT_TEMPLATE:
-            template_name = settings.ESI_DEFAULT_TEMPLATE
-        if settings.ESI_DEFAULT_DIRECTORY:
-            template_dir = settings.ESI_DEFAULT_DIRECTORY
+        template_name = default_template
+        template_dir = default_template_dir
     if template_name is not None and template_dir is not None:
         return Http404()
     obj, model = get_object(app_label, model_name, object_id)
