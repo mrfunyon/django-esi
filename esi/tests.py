@@ -10,7 +10,11 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.template import RequestContext, loader
 from django.test import TestCase, Client
-from django.template import Template, Context, RequestContext
+try:
+    from django.test import RequestFactory
+except:
+    RequestFactory = None
+from django.template import Template, Context, RequestContext, TemplateSyntaxError
 from esi.views import esi, get_object
 
 
@@ -34,11 +38,11 @@ class EsiTest(TestCase):
             self.old_setting.update({setting: None})
         setattr(settings, setting, value)
     
-    def restore_setting(self, setting):
+    def restore_setting(self, setting, default=None):
         if setting in self.old_setting.keys():
             setattr(settings, setting, self.old_setting[setting])
         else:
-            setattr(settings, setting, None)
+            setattr(settings, setting, default)
     
     def test_esi_templatetag(self):
         template = """
@@ -55,6 +59,48 @@ class EsiTest(TestCase):
         
         comparison = """<esi:include src="%s" />"""%(url)
         self.assertEqual(rendered, comparison)
+    
+    def test_esi_templatetag_debug(self):
+        """TODO: Figure this out."""
+        # template = """
+        # {% load esi %}
+        # {% esi for object path 'includes/lists' timeout 1200 %}
+        # """
+        # self.set_setting('DEBUG', True)
+        # c = Context({"object": self.user})
+        # rendered = t.render(c).strip()
+        # args = self.kwargs.copy()
+        # del(args['template'])
+        # args.update({'template':'includes/lists'})
+        # url = reverse('esi',kwargs=args)
+        #     
+        # comparison = """<esi:include src="%s" />"""%(url)
+        # self.assertEqual(rendered, comparison)
+        # self.restore_setting('DEBUG', False)
+        pass
+        
+        
+    
+    def test_esi_templatetag_no_path_error(self):
+        template = """
+        {% load esi %}
+        {% esi for object path %}
+        """
+        self.assertRaises(TemplateSyntaxError, Template, (template))
+    
+    def test_esi_templatetag_no_timeout_error(self):
+        template = """
+        {% load esi %}
+        {% esi for object path 'whee/bleep' timeout %}
+        """
+        self.assertRaises(TemplateSyntaxError, Template, (template))
+    
+    def test_esi_templatetag_no_template_error(self):
+        template = """
+        {% load esi %}
+        {% esi for object template  %}
+        """
+        self.assertRaises(TemplateSyntaxError, Template, (template))
     
     def test_get_object(self):
         """
@@ -99,7 +145,7 @@ class EsiTest(TestCase):
         age = int(r._headers['cache-control'][1].split("=")[1])
         self.assertEqual(self.kwargs['timeout'], age)
         
-        #self.assertEqual(r.content, rendered)
+    
     def test_esi_view_default_directory(self):
         """
         tests that the esi view sets the timeout cache header properly and renders the template correctly.

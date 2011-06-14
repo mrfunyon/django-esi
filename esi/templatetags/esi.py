@@ -37,6 +37,7 @@ class EsiNode(template.Node):
             return '<esi:include src="%s" />' % reverse('esi', kwargs=kwargs)
         else:
             # call the ESI view
+            print context
             return esi_views.esi(context['request'], **kwargs).content
 
 def do_create_esi(parser, token):
@@ -56,27 +57,28 @@ def do_create_esi(parser, token):
     [object]  and [[template template_name] or [path template_path]] are required, timeout is optional.
     """
     
-    try:
         # split_contents() knows not to split quoted strings.
-        args = token.split_contents()
-        tag_name = args[0]
-    except ValueError:
-        raise template.TemplateSyntaxError("%r tag requires a single argument" % token.contents.split()[0])
+    args = token.split_contents()
+    tag_name = args[0]
+    if len(args) < 4:
+        raise template.TemplateSyntaxError("%r tag requires a at least 4 arguments" % token.contents.split()[0])
     if args[1] != 'for':
         raise template.TemplateSyntaxError("%r tag must start with 'for'" % tag_name)
     if args[3] not in ['template', 'path']:
-        print args[3]
         raise template.TemplateSyntaxError("3rd argument of %r tag must start be 'template' or 'path'" % tag_name)
     kwargs = {
         'object': args[2],
     }
     for arg in args:
-        if arg == 'path':
-            kwargs.update({'template_path':args[args.index(arg)+1]})
-        if arg == 'template':
-            kwargs.update({'template_name':args[args.index(arg)+1]})
-        if arg == 'timeout':
-            kwargs.update({'timeout':args[args.index(arg)+1]})
+        try:
+            if arg == 'path':
+                kwargs.update({'template_path':args[args.index(arg)+1]})
+            if arg == 'template':
+                kwargs.update({'template_name':args[args.index(arg)+1]})
+            if arg == 'timeout':
+                kwargs.update({'timeout':args[args.index(arg)+1]})
+        except IndexError:
+            raise template.TemplateSyntaxError("%r in tag '%s' requires an arguement." % (arg, tag_name))
         
     return EsiNode(**kwargs)
 

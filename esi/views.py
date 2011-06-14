@@ -16,16 +16,6 @@ def get_object(app_label, model_name, object_id):
         obj = get_object_or_404(model, pk=object_id)
     return obj, model
 
-def test_esi(request, app_label=None, model_name=None, object_id=None):
-    obj, model = get_object(app_label, model_name, object_id)
-    t = loader.select_template(['esi/esi_test.html',])
-    context = {
-        'object': obj,
-    }
-    c = RequestContext(request, context)
-    response = HttpResponse(t.render(c))
-    return response
-
 def get_template_list(obj, template):
     template_list = []
     if template is None:

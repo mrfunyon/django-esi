@@ -16,7 +16,6 @@ example URL:
 from django.conf.urls.defaults import *
 
 urlpatterns = patterns('esi.views',
-    url(r'^test-view/(?P<app_label>[\w-]+)/(?P<model_name>[\w-]+)/(?P<object_id>\d+)/$', 'test_esi', name='test_esi'),
     url(r'^(?P<app_label>[\w-]+)/(?P<model_name>[\w-]+)/(?P<object_id>\d+)/$', 'esi', name='esi'),
     url(r'^(?P<app_label>[\w-]+)/(?P<model_name>[\w-]+)/(?P<object_id>\d+)/(?P<timeout>\d+)/$', 'esi', name='esi'),
     url(r'^(?P<app_label>[\w-]+)/(?P<model_name>[\w-]+)/(?P<object_id>\d+)/(?P<timeout>\d+)/(?P<template>[\w\-\/\.]+)/$', 'esi', name='esi'),
