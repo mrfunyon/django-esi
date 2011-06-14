@@ -27,19 +27,20 @@ def test_esi(request, app_label=None, model_name=None, object_id=None):
     return response
 
 def get_template_list(obj, template):
-    template_path = None
-    template_dir = None
     template_list = []
+    if template is None:
+        return []
     try:
         _ =  loader.get_template(template)
         template_list.append(template)
     except loader.TemplateDoesNotExist:
+        if not template.endswith('/'):
+            template.rstrip("/")
         # Consider all parent classes excluding Model.
         content_types = type(obj).mro()
         if Model in content_types:
             content_types.remove(Model)
         content_types = [ct for ct in content_types if hasattr(ct, '_meta')]
-        
         ctype_strs = []
         for ctype in content_types:
             ctype_strs.append('%s.%s' % (ctype._meta.app_label, ctype._meta.module_name))
@@ -84,19 +85,20 @@ def esi(request, app_label=None, model_name=None, object_id=None, timeout=900, t
     default_template = getattr(settings, 'ESI_DEFAULT_TEMPLATE', None)
     default_template_dir = getattr(settings, 'ESI_DEFAULT_DIRECTORY', None)
     obj, model = get_object(app_label, model_name, object_id)
+    template_list = []
     if template is not None:
-        template_list = get_template_list(obj, template)
+        template_list.extend(get_template_list(obj, template))
     else:
         if default_template is not None:
             temp_t =  get_template_list(obj, default_template)
             if temp_t is not None:
-                template_list = get_template_list(obj, default_template)
-        if default_template_dir is not None:
+                template_list.extend(get_template_list(obj, default_template))
+        if default_template_dir is not None and len(template_list) == 0:
             temp_t =  get_template_list(obj, default_template_dir)
             if temp_t is not None:
-                template_list = get_template_list(obj, default_template)
+                template_list.extend(get_template_list(obj, default_template_dir))
     if len(template_list) == 0:
-        return Http404()
+        raise Http404
     t = loader.select_template(template_list)
     context = {
         'object': obj,

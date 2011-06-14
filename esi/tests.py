@@ -31,11 +31,14 @@ class EsiTest(TestCase):
             if getattr(settings, setting):
                 self.old_setting.update({setting: getattr(settings, setting)})
         except AttributeError:
-            pass
+            self.old_setting.update({setting: None})
         setattr(settings, setting, value)
+    
     def restore_setting(self, setting):
         if setting in self.old_setting.keys():
-            setattr(setting, setting, self.old_setting[setting])
+            setattr(settings, setting, self.old_setting[setting])
+        else:
+            setattr(settings, setting, None)
     
     def test_esi_templatetag(self):
         template = """
@@ -97,11 +100,23 @@ class EsiTest(TestCase):
         self.assertEqual(self.kwargs['timeout'], age)
         
         #self.assertEqual(r.content, rendered)
-    
-    def test_esi_view_errors(self):
+    def test_esi_view_default_directory(self):
         """
         tests that the esi view sets the timeout cache header properly and renders the template correctly.
-        esi(request, app_label=None, model_name=None, object_id=None, timeout=1200, template=None)
+        """
+        client = Client()
+        args = self.kwargs.copy()
+        del(args['template'])
+        self.set_setting('ESI_DEFAULT_DIRECTORY', 'includes/lists')
+        url = reverse('esi',kwargs=args)
+        r = client.get(url)
+        self.restore_setting('ESI_DEFAULT_DIRECTORY')
+        age = int(r._headers['cache-control'][1].split("=")[1])
+        self.assertEqual(self.kwargs['timeout'], age)
+        
+    def test_esi_default_template(self):
+        """
+        tests that the esi view sets the timeout cache header properly and renders the template correctly.
         """
         client = Client()
         args = self.kwargs.copy()
@@ -110,14 +125,6 @@ class EsiTest(TestCase):
         url = reverse('esi',kwargs=args)
         r = client.get(url)
         self.restore_setting('ESI_DEFAULT_TEMPLATE')
-        self.set_setting('ESI_DEFAULT_DIRECTORY', 'includes/lists')
-        url = reverse('esi',kwargs=args)
-        r = client.get(url)
-        self.restore_setting('ESI_DEFAULT_DIRECTORY')
-        #<a href='{{object.get_absolute_url}}'>{{object.username}}</a>
-        #args.update({'template':'includes/lists/'})
-        
-        
         age = int(r._headers['cache-control'][1].split("=")[1])
         self.assertEqual(self.kwargs['timeout'], age)
     
