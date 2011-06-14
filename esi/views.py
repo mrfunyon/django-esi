@@ -26,51 +26,14 @@ def test_esi(request, app_label=None, model_name=None, object_id=None):
     response = HttpResponse(t.render(c))
     return response
 
-def esi(request, app_label=None, model_name=None, object_id=None, timeout=900, template_name=None, template_dir=None):
-    """
-    Using the app_label, module_name and object_id parameters create an object and render it using `template_name` or `template_dir`.
-    
-    Parameters:
-        :app_label: `Name of a app (i.e. auth)`
-        :model_name: `Name of a model (i.e. user)`
-        :object_id: `This's objects primary key id`
-        :timeout: `Time in secondsfor this objects max_age. [default 900]`
-        :template_name: `full template path to the template to use to render the object`
-        :template_dir: `Directory in which to render this object`
-        
-        `template_name` and `template_dir` are exclusive, if included.
-        
-    Context:
-        `object`
-            The object that was returned
-        `model_name`
-            If you are using a User object `user` will be in the context.
-    
-    Templates:
-        if `template_name` is used that template is used to render the object.
-        
-        if `template_dir` is used a file called `app_label`.`model_name`.html
-        ,along with any other models' content types that the object extends,
-        will be looked for in `template_dir` falling back to `template_dir`/default.html 
-        if none can be found.
-        
-        If no template is provided `settings`.ESI_DEFAULT_TEMPLATE and `settings`.ESI_DEFAULT_DIRECTORY
-        will be checked with the same logic as `template_name` and `template_dir`
-        
-    """
-    default_template = getattr(settings, 'ESI_DEFAULT_TEMPLATE', None)
-    default_template_dir = getattr(settings, 'ESI_DEFAULT_DIRECTORY', None)
-    if template_name is None and template_dir is None:
-        template_name = default_template
-        template_dir = default_template_dir
-    if template_name is not None and template_dir is not None:
-        return Http404()
-    obj, model = get_object(app_label, model_name, object_id)
+def get_template_list(obj, template):
+    template_path = None
+    template_dir = None
     template_list = []
-    if template_name:
-        template_list.append(template_name)
-        template_list.append("includes/lists/%s.%s.html" % (obj._meta.app_label, obj._meta.module_name))
-    if template_dir:
+    try:
+        _ =  loader.get_template(template)
+        template_list.append(template)
+    except loader.TemplateDoesNotExist:
         # Consider all parent classes excluding Model.
         content_types = type(obj).mro()
         if Model in content_types:
@@ -81,12 +44,58 @@ def esi(request, app_label=None, model_name=None, object_id=None, timeout=900, t
         for ctype in content_types:
             ctype_strs.append('%s.%s' % (ctype._meta.app_label, ctype._meta.module_name))
         
-        tdirs = [template_dir,]
+        tdirs = [template,]
         for tdir in tdirs:
             for ctype_str in ctype_strs:
                 template_list.append('%s/%s.html' % (tdir, ctype_str))
             template_list.append('%s/default.html' % tdir)
-    if len(template_list) ==0:
+    return template_list
+
+def esi(request, app_label=None, model_name=None, object_id=None, timeout=900, template=None):
+    """
+    Using the app_label, module_name and object_id parameters create an object and render it using `template_name` or `template_dir`.
+    
+    Parameters:
+        :app_label: `Name of a app (i.e. auth)`
+        :model_name: `Name of a model (i.e. user)`
+        :object_id: `This's objects primary key id`
+        :timeout: `Time in secondsfor this objects max_age. [default 900]`
+        :template: `a path to a template directory or a template`
+        
+    Context:
+        `object`
+            The object that was returned
+        `model_name`
+            If you are using a User object `user` will be in the context.
+    
+    Templates:
+        if `template` is a directory:
+            A file called `app_label`.`model_name`.html ,along with any other models'
+            content types that the object extends, will be looked for in the `template`
+            directory falling back to `template`/default.html 
+            if none can be found.
+        if `template` is a file:
+            The file `template` will be loaded and rendered.
+            
+        If no template is provided `settings`.ESI_DEFAULT_TEMPLATE and `settings`.ESI_DEFAULT_DIRECTORY
+        will be checked with the same logic as above.
+        
+    """
+    default_template = getattr(settings, 'ESI_DEFAULT_TEMPLATE', None)
+    default_template_dir = getattr(settings, 'ESI_DEFAULT_DIRECTORY', None)
+    obj, model = get_object(app_label, model_name, object_id)
+    if template is not None:
+        template_list = get_template_list(obj, template)
+    else:
+        if default_template is not None:
+            temp_t =  get_template_list(obj, default_template)
+            if temp_t is not None:
+                template_list = get_template_list(obj, default_template)
+        if default_template_dir is not None:
+            temp_t =  get_template_list(obj, default_template_dir)
+            if temp_t is not None:
+                template_list = get_template_list(obj, default_template)
+    if len(template_list) == 0:
         return Http404()
     t = loader.select_template(template_list)
     context = {

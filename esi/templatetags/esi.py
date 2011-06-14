@@ -18,6 +18,7 @@ class EsiNode(template.Node):
             self.template = template_path
         if timeout:
             self.timeout = timeout or settings.CACHE_MIDDLEWARE_SECONDS
+    
     def render(self,context):
         try:
             object = self.object.resolve(context)
@@ -30,13 +31,10 @@ class EsiNode(template.Node):
             'model_name': object._meta.module_name,
             'object_id': object.pk,
             'timeout': timeout,
+            'template': template
         }
-        if 'list' in self.url_name:
-            kwargs['template_dir'] = template
-        else:
-            kwargs['template_name'] = template
         if not settings.DEBUG:
-            return '<esi:include src="%s" />' % reverse(self.url_name, kwargs=kwargs)
+            return '<esi:include src="%s" />' % reverse('esi', kwargs=kwargs)
         else:
             # call the ESI view
             return esi_views.esi(context['request'], **kwargs).content
@@ -66,7 +64,8 @@ def do_create_esi(parser, token):
         raise template.TemplateSyntaxError("%r tag requires a single argument" % token.contents.split()[0])
     if args[1] != 'for':
         raise template.TemplateSyntaxError("%r tag must start with 'for'" % tag_name)
-    if args[3] not in ['tempalte', 'path']:
+    if args[3] not in ['template', 'path']:
+        print args[3]
         raise template.TemplateSyntaxError("3rd argument of %r tag must start be 'template' or 'path'" % tag_name)
     kwargs = {
         'object': args[2],
